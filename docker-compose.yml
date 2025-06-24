@@ -1,0 +1,54 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      service1:
+        condition: service_healthy
+      service2:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  service1:
+    build:
+      context: ./service_1
+      dockerfile: Dockerfile
+    expose:
+      - "8001" # Corrected port for Go app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/ping"] # Corrected port and endpoint
+      interval: 10s
+      timeout: 10s   # Increased timeout
+      retries: 3
+      start_period: 30s # Increased start period
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  service2:
+    build:
+      context: ./service_2
+      dockerfile: Dockerfile
+    expose:
+      - "8002" # Corrected port for Python app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/ping"] # Corrected port and endpoint
+      interval: 10s
+      timeout: 10s   # Increased timeout
+      retries: 3
+      start_period: 30s # Increased start period
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
